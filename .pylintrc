@@ -1,0 +1,6 @@
+[MASTER]
+disable=C0114, # missing-module-docstring
+
+[BASIC]
+# Good variable names
+good-names=i,f

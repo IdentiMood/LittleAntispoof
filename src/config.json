@@ -1,0 +1,6 @@
+{
+    "emotion": {
+        "detector_backend": "opencv"
+    },
+    "debug": true
+}
