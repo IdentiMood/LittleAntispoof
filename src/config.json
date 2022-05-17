@@ -2,5 +2,8 @@
     "emotion": {
         "detector_backend": "opencv"
     },
+    "verify": {
+        "detector_backend": "opencv"
+    },
     "debug": true
 }

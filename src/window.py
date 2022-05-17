@@ -1,7 +1,8 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 import cv2
-from utils import OPERATIONS_WINDOW_LABELS, OPERATIONS_WINDOW_TITLES
+from utils import OPERATIONS_WINDOW_TITLES
+from gaze_tracking import GazeTracking
 
 
 class Window:
@@ -9,16 +10,16 @@ class Window:
     Window is the LittleAntispoof class that creates and handles Tkinter windows,
     in order to acquire pictures of the user from the webcam.
     Window automatically creates and configures the appropriate widgets,
-    based on the recognition operation to perform.
+    based on the operation to perform.
     """
 
-    def __init__(self, operation: int):
+    def __init__(self, operation: int, task: str):
         self.window = tk.Tk()
         self.window.title(OPERATIONS_WINDOW_TITLES[operation])
 
         self.label = tk.Label(
             self.window,
-            text=OPERATIONS_WINDOW_LABELS[operation],
+            text=task,
             pady=20,
             font=("sans-serif", 24),
         )
