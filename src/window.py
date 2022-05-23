@@ -5,22 +5,20 @@ import cv2
 from playsound import playsound
 from PIL import Image, ImageTk
 from utils import OPERATIONS_WINDOW_TITLES
-from gaze_tracking import GazeTracking
 
 
 class Window:
     """
     Window is the LittleAntispoof class that creates and handles Tkinter windows,
     in order to acquire pictures of the user from the webcam.
-    Window automatically creates and configures the appropriate widgets,
-    based on the operation to perform.
+    Window automatically creates and configures the appropriate widgets.
     """
 
-    def __init__(self, operation: int, task: str, config: dict):
+    def __init__(self, operation: int, task: str, config: dict, callback: callable):
         self.current_countdown = config["window"]["duration_secs"]
         self.closing_sound = config["sounds"]["camera_shot"]
 
-        self.is_expired = False
+        self.callback = callback
 
         self.window = tk.Tk()
         self.window.title(OPERATIONS_WINDOW_TITLES[operation])
@@ -43,7 +41,7 @@ class Window:
         self.canvas.pack()
         self.countdown_label.pack()
 
-        self.shot_button_pressed = False
+        self.is_expired = False
         self.capture = cv2.VideoCapture(0)
         self.frame = None
 
@@ -57,6 +55,9 @@ class Window:
         Starts the video capture from OpenCV and displays each frame on the canvas
         """
         _, self.frame = self.capture.read()
+
+        self.callback(self.frame)
+
         decorated_frame = self._decorate_frame()
 
         image = cv2.cvtColor(decorated_frame, cv2.COLOR_BGR2RGB)
@@ -67,7 +68,7 @@ class Window:
         self.canvas.configure(image=image)
         self.window.after(10, self.start_video_loop)
 
-        if self._is_expired():
+        if self.is_expired:
             playsound(self.closing_sound)
             self._destroy_with_success()
 
@@ -76,16 +77,14 @@ class Window:
             time.sleep(1)
             self.current_countdown -= 1
             self.countdown_label.config(text=self.current_countdown)
-
-    def _is_expired(self) -> bool:
-        return self.current_countdown == 0
+            self.is_expired = self.current_countdown == 0
 
     def _destroy_with_success(self):
         """
         Closes the current Window with a "success" state,
         meaning that the user has clicked the "shot" button.
         """
-        self.shot_button_pressed = True
+        self.is_expired = True
         self.window.destroy()
 
     def _decorate_frame(self):

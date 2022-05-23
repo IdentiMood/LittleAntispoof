@@ -25,6 +25,9 @@ class App:
         self.operations_list = OPERATIONS_LIST
         random.shuffle(self.operations_list)
 
+        self.blinks_checks_count = 0
+        self.blinks_count = 0
+
     def verify(self) -> bool:
         """
         Starts the antispoofing detection procedure.
@@ -32,23 +35,30 @@ class App:
         passed_steps = 0
         for operation in self.operations_list:
             if operation in (OPERATION_VERIFY_EMOTION, OPERATION_VERIFY_GAZE):
-                result, aborted = self.do_video_verification(operation)
+                result, blink_check_passed, aborted = self.do_video_verification(
+                    operation
+                )
+                if blink_check_passed:
+                    passed_steps += result
+                    if self.config["debug"]:
+                        print("Blink check passed")
             else:
                 result, aborted = self.do_speech_verification()
+                blink_check_passed = True  # TODO implement
+                passed_steps += 1  # TODO implement
 
             if aborted:
                 return False
 
-            passed_steps += result
-
-        print(f"Passed steps: {passed_steps}")
+        if self.config["debug"]:
+            print(f"Passed steps: {passed_steps}")
 
         return passed_steps == len(self.operations_list)
 
     def do_video_verification(self, operation: int) -> tuple:
         """
         Shows a Window to shot the picture.
-        Returns a tuple (success, operation_has_been_aborted).
+        Returns a triple (success, blink_check_passed, operation_has_been_aborted).
         """
         task = (
             get_random_emotion_task()
@@ -56,11 +66,23 @@ class App:
             else get_random_gaze_task()
         )
 
-        window = Window(operation, task, self.config)
-        if window.shot_button_pressed:
-            return self.handle_probe(operation, window.frame, task), False
+        window = Window(operation, task, self.config, callback=self._count_blinks)
+        blinks_check_passed = (
+            self.operations.do_blinks_ratio_check(
+                self.blinks_checks_count, self.blinks_count
+            ),
+        )
 
-        return False, True
+        return (
+            self.handle_probe(operation, window.frame, task),
+            blinks_check_passed,
+            (not window.is_expired),
+        )
+
+    def _count_blinks(self, probe):
+        self.blinks_checks_count += 1
+        if self.operations.is_blinking(probe):
+            self.blinks_count += 1
 
     def handle_probe(self, operation: int, frame, task: str) -> bool:
         """
@@ -82,6 +104,7 @@ class App:
         return self.operations.verify_gaze(frame, task)
 
     def do_speech_verification(self):
+        # TODO implement
         return True, False
 
 

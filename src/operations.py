@@ -2,7 +2,7 @@ import json
 import cv2
 from deepface import DeepFace
 from gaze_tracking import GazeTracking
-from utils import TASK_GAZE_CENTER, TASK_GAZE_LEFT, TASK_GAZE_RIGHT
+from utils import TASK_GAZE_CENTER, TASK_GAZE_LEFT, TASK_GAZE_RIGHT, CLOSED_EYES
 
 
 class Operations:
@@ -13,6 +13,7 @@ class Operations:
     def __init__(self, config):
         self.config = config
         self.is_debug = config["debug"]
+        self.gaze = GazeTracking()
 
     def detect_face(self, probe):
         """
@@ -42,26 +43,42 @@ class Operations:
 
     def verify_gaze(self, probe, requested_gaze: str) -> bool:
         """
-        Return True if the gaze in the probe matches with the requested one.
+        Returns True if the given gaze in the given probe matches the requested one
         """
 
-        def __get_gaze_direction(gaze):
-            if gaze.is_left():
+        def __get_gaze_direction():
+            if self.gaze.is_left():
                 return TASK_GAZE_LEFT
-            if gaze.is_center():
+            if self.gaze.is_center():
                 return TASK_GAZE_CENTER
-            if gaze.is_right():
+            if self.gaze.is_right():
                 return TASK_GAZE_RIGHT
 
         if self.is_debug:
             print("Performing emotion recognition")
 
-        gaze = GazeTracking()
-        gaze.refresh(probe)
+        self.gaze.refresh(probe)
 
         if self.is_debug:
-            print(
-                f"Requested gaze: {requested_gaze}; got: {__get_gaze_direction(gaze)}"
-            )
+            print(f"Requested gaze: {requested_gaze}; got: {__get_gaze_direction()}")
 
-        return requested_gaze == __get_gaze_direction(gaze)
+        return requested_gaze == __get_gaze_direction()
+
+    def is_blinking(self, probe) -> bool:
+        """
+        Returns True if the eyes in the given probe are closed
+        """
+        self.gaze.refresh(probe)
+        return self.gaze.is_blinking()
+
+    def do_blinks_ratio_check(
+        self, blinks_checks_count: int, blinks_count: int
+    ) -> bool:
+        """
+        Returns True if the ratio of blinks is within the configured thresholds range
+        """
+        return (
+            self.config["blinking"]["min_threshold"]
+            <= blinks_count / blinks_checks_count
+            <= self.config["blinking"]["max_threshold"]
+        )
