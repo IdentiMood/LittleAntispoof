@@ -5,5 +5,14 @@
     "verify": {
         "detector_backend": "opencv"
     },
+    "window": {
+        "duration_secs": 5,
+        "blinking_min_threshold": 0.2,
+        "blinking_max_threshold": 0.5
+    },
+    "sounds": {
+        "camera_shot": "./sounds/camera_shot.wav",
+        "mic_stop": "./sounds/mic_stop.wav"
+    },
     "debug": true
 }

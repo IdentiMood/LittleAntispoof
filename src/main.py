@@ -56,7 +56,7 @@ class App:
             else get_random_gaze_task()
         )
 
-        window = Window(operation, task)
+        window = Window(operation, task, self.config)
         if window.shot_button_pressed:
             return self.handle_probe(operation, window.frame, task), False
 

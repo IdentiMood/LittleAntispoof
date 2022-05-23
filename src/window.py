@@ -1,6 +1,9 @@
 import tkinter as tk
-from PIL import Image, ImageTk
+import time
+import threading
 import cv2
+from playsound import playsound
+from PIL import Image, ImageTk
 from utils import OPERATIONS_WINDOW_TITLES
 from gaze_tracking import GazeTracking
 
@@ -13,7 +16,12 @@ class Window:
     based on the operation to perform.
     """
 
-    def __init__(self, operation: int, task: str):
+    def __init__(self, operation: int, task: str, config: dict):
+        self.current_countdown = config["window"]["duration_secs"]
+        self.closing_sound = config["sounds"]["camera_shot"]
+
+        self.is_expired = False
+
         self.window = tk.Tk()
         self.window.title(OPERATIONS_WINDOW_TITLES[operation])
 
@@ -24,23 +32,22 @@ class Window:
             font=("sans-serif", 24),
         )
         self.canvas = tk.Label(self.window)
-        self.button = tk.Button(
+        self.countdown_label = tk.Label(
             self.window,
-            text="Shoot picture",
-            padx=20,
-            pady=10,
-            font=("sans-serif", 18, "bold"),
-            command=self._destroy_with_success,
+            text=self.current_countdown,
+            pady=20,
+            font=("sans-serif", 24),
         )
 
         self.label.pack()
         self.canvas.pack()
-        self.button.pack(pady=20)
-        self.button.focus_set()
+        self.countdown_label.pack()
 
         self.shot_button_pressed = False
         self.capture = cv2.VideoCapture(0)
         self.frame = None
+
+        threading.Thread(target=self._countdown).start()
 
         self.start_video_loop()
         self.window.mainloop()
@@ -59,6 +66,19 @@ class Window:
         self.canvas.imgtk = image
         self.canvas.configure(image=image)
         self.window.after(10, self.start_video_loop)
+
+        if self._is_expired():
+            playsound(self.closing_sound)
+            self._destroy_with_success()
+
+    def _countdown(self) -> bool:
+        while self.current_countdown != 0:
+            time.sleep(1)
+            self.current_countdown -= 1
+            self.countdown_label.config(text=self.current_countdown)
+
+    def _is_expired(self) -> bool:
+        return self.current_countdown == 0
 
     def _destroy_with_success(self):
         """
