@@ -1,0 +1,5 @@
+"casa"
+"gelato"
+"macchina"
+"occhiali"
+"pane"

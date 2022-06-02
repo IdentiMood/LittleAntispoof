@@ -3,11 +3,12 @@
 import random
 import sys
 from operations import Operations
-from window import Window
+from window import Window, WORDS
 from utils import (
     load_config,
     get_random_emotion_task,
     get_random_gaze_task,
+    get_speech_recognition_task,
     OPERATION_VERIFY_EMOTION,
     OPERATION_VERIFY_GAZE,
     OPERATIONS_LIST,
@@ -43,9 +44,13 @@ class App:
                     if self.config["debug"]:
                         print("Blink check passed")
             else:
-                result, aborted = self.do_speech_verification()
-                blink_check_passed = True  # TODO implement
-                passed_steps += 1  # TODO implement
+                result, blink_check_passed, aborted = self.do_speech_verification(
+                    operation
+                )
+                if blink_check_passed:
+                    passed_steps += result
+                    if self.config["debug"]:
+                        print("Blink check passed")
 
             if aborted:
                 return False
@@ -90,7 +95,8 @@ class App:
         Returns True if the result of the operation was successful.
         """
         try:
-            self.operations.detect_face(frame)
+            if operation < 2:
+                self.operations.detect_face(frame)
         except ValueError as error:
             print(
                 "Error while handling the probe.",
@@ -101,11 +107,29 @@ class App:
 
         if operation == OPERATION_VERIFY_EMOTION:
             return self.operations.verify_emotion(frame, task)
-        return self.operations.verify_gaze(frame, task)
+        elif operation == OPERATION_VERIFY_GAZE:
+            return self.operations.verify_gaze(frame, task)
+        else:
+            return self.operations.verify_speech(WORDS)
 
-    def do_speech_verification(self):
-        # TODO implement
-        return True, False
+    def do_speech_verification(self, operation: int):
+        """
+        TODO
+        """
+        task = get_speech_recognition_task()
+
+        window = Window(operation, task, self.config, callback=self._count_blinks)
+        blinks_check_passed = (
+            self.operations.do_blinks_ratio_check(
+                self.blinks_checks_count, self.blinks_count
+            ),
+        )
+
+        return (
+            self.handle_probe(operation, None, task),
+            blinks_check_passed,
+            (not window.is_expired),
+        )
 
 
 if __name__ == "__main__":

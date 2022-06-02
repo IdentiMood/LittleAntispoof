@@ -1,5 +1,7 @@
 import random
 import json
+import os
+from dotenv import load_dotenv
 
 KEY_ESC = 27
 KEY_ENTER = 32
@@ -30,13 +32,25 @@ TASK_GAZE_CENTER = "center"
 TASK_GAZE_LEFT = "left"
 CLOSED_EYES = "closed_eyes"
 
-EMOTION_TASKS = [TASK_EMOTION_HAPPY, TASK_EMOTION_SAD, TASK_EMOTION_FEAR]
+SPEECH_RECOGNITION_HELP = "Frase per descrivere cosa l'utente deve fare"
+
+EMOTION_TASKS = [
+    TASK_EMOTION_HAPPY,
+    TASK_EMOTION_SAD,
+    TASK_EMOTION_FEAR,
+]
 
 GAZE_TASKS = [
     TASK_GAZE_RIGHT,
     TASK_GAZE_CENTER,
     TASK_GAZE_LEFT,
 ]
+
+NUMBER_OF_WORDS_TO_DISPLAY = 3
+
+SAMPLING_RATE = 48000
+
+RECORD_SEC = 5
 
 
 def load_config():
@@ -54,3 +68,21 @@ def get_random_emotion_task() -> str:
 
 def get_random_gaze_task() -> str:
     return GAZE_TASKS[random.randint(0, len(GAZE_TASKS) - 1)]
+
+
+def get_speech_recognition_task() -> str:
+    return SPEECH_RECOGNITION_HELP
+
+
+def get_random_words(dictionary) -> str:
+    words_list = ""
+    lines = open(dictionary).read().splitlines()
+    random_indexes = random.sample(range(0, len(lines)), NUMBER_OF_WORDS_TO_DISPLAY)
+    for index in random_indexes:
+        words_list += lines[index][1:-1] + " "
+    return words_list
+
+
+def get_azure_api_key() -> str:
+    load_dotenv(".env")
+    return os.environ.get("AZURE_API_KEY")

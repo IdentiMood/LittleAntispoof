@@ -1,4 +1,7 @@
 gaze_tracking
+record
+
+.env
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
