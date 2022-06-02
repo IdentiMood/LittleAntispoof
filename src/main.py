@@ -2,6 +2,7 @@
 
 import random
 import sys
+import os
 from operations import Operations
 from window import Window, WORDS
 from utils import (
@@ -9,8 +10,10 @@ from utils import (
     get_random_emotion_task,
     get_random_gaze_task,
     get_speech_recognition_task,
+    generate_temporary_path,
     OPERATION_VERIFY_EMOTION,
     OPERATION_VERIFY_GAZE,
+    OPERATION_VERIFY_SPEECH,
     OPERATIONS_LIST,
 )
 
@@ -44,9 +47,7 @@ class App:
                     if self.config["debug"]:
                         print("Blink check passed")
             else:
-                result, blink_check_passed, aborted = self.do_speech_verification(
-                    operation
-                )
+                result, blink_check_passed, aborted = self.do_speech_verification()
                 if blink_check_passed:
                     passed_steps += result
                     if self.config["debug"]:
@@ -89,7 +90,7 @@ class App:
         if self.operations.is_blinking(probe):
             self.blinks_count += 1
 
-    def handle_probe(self, operation: int, frame, task: str) -> bool:
+    def handle_probe(self, operation: int, frame, task: str, tmpfile=None) -> bool:
         """
         Calls the given recognition operation on the given frame.
         Returns True if the result of the operation was successful.
@@ -110,26 +111,38 @@ class App:
         elif operation == OPERATION_VERIFY_GAZE:
             return self.operations.verify_gaze(frame, task)
         else:
-            return self.operations.verify_speech(WORDS)
+            return self.operations.verify_speech(WORDS, tmpfile)
 
-    def do_speech_verification(self, operation: int):
+    def do_speech_verification(self):
         """
-        TODO
+        Calls the speech verification operation.
+        Returns a tuple (speech verification passed, blink checks passed, operation complete).
         """
         task = get_speech_recognition_task()
 
-        window = Window(operation, task, self.config, callback=self._count_blinks)
+        tmpfile = generate_temporary_path()
+
+        window = Window(
+            OPERATION_VERIFY_SPEECH,
+            task,
+            self.config,
+            callback=self._count_blinks,
+            tmpfile=tmpfile,
+        )
         blinks_check_passed = (
             self.operations.do_blinks_ratio_check(
                 self.blinks_checks_count, self.blinks_count
             ),
         )
 
-        return (
-            self.handle_probe(operation, None, task),
+        result = (
+            self.handle_probe(OPERATION_VERIFY_SPEECH, None, task, tmpfile=tmpfile),
             blinks_check_passed,
             (not window.is_expired),
         )
+        os.remove(tmpfile)
+
+        return result
 
 
 if __name__ == "__main__":

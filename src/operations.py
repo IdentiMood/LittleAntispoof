@@ -1,5 +1,3 @@
-import json
-import cv2
 from deepface import DeepFace
 from gaze_tracking import GazeTracking
 from utils import (
@@ -90,7 +88,7 @@ class Operations:
             <= self.config["blinking"]["max_threshold"]
         )
 
-    def verify_speech(self, words: str) -> bool:
+    def verify_speech(self, words: str, tmpfile) -> bool:
         def speech_to_text():
             """
             TODO
@@ -99,7 +97,7 @@ class Operations:
                 subscription=get_azure_api_key(), region="francecentral"
             )
             speech_config.speech_recognition_language = "en-US"
-            audio_input = speechsdk.AudioConfig(filename="record/record.wav")
+            audio_input = speechsdk.AudioConfig(filename=tmpfile)
             speech_recognizer = speechsdk.SpeechRecognizer(
                 speech_config=speech_config, audio_config=audio_input
             )

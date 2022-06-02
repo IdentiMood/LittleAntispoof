@@ -4,7 +4,13 @@ import threading
 import cv2
 from playsound import playsound
 from PIL import Image, ImageTk
-from utils import OPERATIONS_WINDOW_TITLES, get_random_words, SAMPLING_RATE, RECORD_SEC
+from utils import (
+    OPERATIONS_WINDOW_TITLES,
+    get_random_words,
+    SAMPLING_RATE,
+    RECORD_SEC,
+    OPERATION_VERIFY_SPEECH,
+)
 import sounddevice as sd
 from scipy.io.wavfile import write
 
@@ -18,12 +24,16 @@ class Window:
     Window automatically creates and configures the appropriate widgets.
     """
 
-    def __init__(self, operation: int, task: str, config: dict, callback: callable):
+    def __init__(
+        self, operation: int, task: str, config: dict, callback: callable, tmpfile=None
+    ):
         global WORDS
         self.current_countdown = config["window"]["duration_secs"]
         self.closing_sound = config["sounds"]["camera_shot"]
+        self.is_debug = config["debug"]
 
         self.callback = callback
+        self.tmpfile = tmpfile
 
         self.window = tk.Tk()
         self.window.title(OPERATIONS_WINDOW_TITLES[operation])
@@ -50,7 +60,7 @@ class Window:
 
         self.capture = cv2.VideoCapture(0)
         self.frame = None
-        if operation == 2:
+        if operation == OPERATION_VERIFY_SPEECH:
             self.words = tk.Label(
                 self.window,
                 text=WORDS,
@@ -58,20 +68,22 @@ class Window:
                 font=("sans-serif", 18),
             )
             self.words.pack()
+            speech_thread = threading.Thread(target=self.record_audio)
+            speech_thread.start()
 
-        speech_thread = threading.Thread(target=self.record_audio)
-        speech_thread.start()
         threading.Thread(target=self._countdown).start()
 
-        if operation < 2:
-            self.start_video_loop()
-        else:
+        if operation == OPERATION_VERIFY_SPEECH:
             self.start_speech_loop()
+        else:
+            self.start_video_loop()
 
         self.countdown_label.pack()
         self.window.mainloop()
 
-        speech_thread.join()
+        if operation == OPERATION_VERIFY_SPEECH:
+            # wait for thread end
+            speech_thread.join()
 
     def start_speech_loop(self):
         _, self.frame = self.capture.read()
@@ -150,8 +162,10 @@ class Window:
         """
         fs = SAMPLING_RATE
 
-        print("Start Recording")
+        if self.is_debug:
+            print(f"Start recording to temporary file {self.tmpfile}")
         my_recording = sd.rec(int(RECORD_SEC * fs), samplerate=fs, channels=1)
         sd.wait()
-        write("record/record.wav", fs, my_recording)
-        print("End Recording")
+        write(self.tmpfile, fs, my_recording)
+        if self.is_debug:
+            print("End recording")

@@ -1,6 +1,7 @@
 import random
 import json
 import os
+import tempfile
 from dotenv import load_dotenv
 
 KEY_ESC = 27
@@ -86,3 +87,7 @@ def get_random_words(dictionary_path: str) -> str:
 def get_azure_api_key() -> str:
     load_dotenv(".env")
     return os.environ.get("AZURE_API_KEY")
+
+
+def generate_temporary_path() -> str:
+    return f"{tempfile._get_default_tempdir()}/{tempfile._get_candidate_names().__next__()}"
