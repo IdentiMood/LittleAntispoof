@@ -2,7 +2,14 @@ import json
 import cv2
 from deepface import DeepFace
 from gaze_tracking import GazeTracking
-from utils import TASK_GAZE_CENTER, TASK_GAZE_LEFT, TASK_GAZE_RIGHT, CLOSED_EYES
+from utils import (
+    TASK_GAZE_CENTER,
+    TASK_GAZE_LEFT,
+    TASK_GAZE_RIGHT,
+    CLOSED_EYES,
+    get_azure_api_key,
+)
+import azure.cognitiveservices.speech as speechsdk
 
 
 class Operations:
@@ -36,7 +43,7 @@ class Operations:
 
         if self.is_debug:
             print(
-                f"Requested emotion: {requested_emotion}; got {result['dominant_emotion']}"
+                f"Requested emotion: {requested_emotion}; got {result['dominant_emotion']}\n"
             )
 
         return result["dominant_emotion"] == requested_emotion
@@ -60,7 +67,7 @@ class Operations:
         self.gaze.refresh(probe)
 
         if self.is_debug:
-            print(f"Requested gaze: {requested_gaze}; got: {__get_gaze_direction()}")
+            print(f"Requested gaze: {requested_gaze}; got: {__get_gaze_direction()}\n")
 
         return requested_gaze == __get_gaze_direction()
 
@@ -82,3 +89,30 @@ class Operations:
             <= blinks_count / blinks_checks_count
             <= self.config["blinking"]["max_threshold"]
         )
+
+    def verify_speech(self, words: str) -> bool:
+        def speech_to_text():
+            """
+            TODO
+            """
+            speech_config = speechsdk.SpeechConfig(
+                subscription=get_azure_api_key(), region="francecentral"
+            )
+            speech_config.speech_recognition_language = "en-US"
+            audio_input = speechsdk.AudioConfig(filename="record/record.wav")
+            speech_recognizer = speechsdk.SpeechRecognizer(
+                speech_config=speech_config, audio_config=audio_input
+            )
+
+            result = speech_recognizer.recognize_once_async().get()
+            final_result = result.text
+            for char in [",", ".", "?", "!", ";"]:
+                final_result = final_result.replace(char, "")
+            return final_result.lower()
+
+        stt = speech_to_text()
+        if self.is_debug:
+            print(f"Requested words: {words}; got: {stt}")
+            print(f"Result: {words[:-1] == stt}\n")
+
+        return words[:-1] == stt

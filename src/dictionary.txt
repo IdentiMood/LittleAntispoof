@@ -1,0 +1,10 @@
+house
+car
+machine
+sun
+sky
+hello
+keyboard
+computer
+multimodal
+biometric

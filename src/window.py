@@ -4,7 +4,11 @@ import threading
 import cv2
 from playsound import playsound
 from PIL import Image, ImageTk
-from utils import OPERATIONS_WINDOW_TITLES
+from utils import OPERATIONS_WINDOW_TITLES, get_random_words, SAMPLING_RATE, RECORD_SEC
+import sounddevice as sd
+from scipy.io.wavfile import write
+
+WORDS = get_random_words("./dictionary.txt")
 
 
 class Window:
@@ -15,6 +19,7 @@ class Window:
     """
 
     def __init__(self, operation: int, task: str, config: dict, callback: callable):
+        global WORDS
         self.current_countdown = config["window"]["duration_secs"]
         self.closing_sound = config["sounds"]["camera_shot"]
 
@@ -39,16 +44,43 @@ class Window:
 
         self.label.pack()
         self.canvas.pack()
-        self.countdown_label.pack()
+        # self.countdown_label.pack()
 
         self.is_expired = False
+
         self.capture = cv2.VideoCapture(0)
         self.frame = None
+        if operation == 2:
+            self.words = tk.Label(
+                self.window,
+                text=WORDS,
+                pady=20,
+                font=("sans-serif", 18),
+            )
+            self.words.pack()
 
+        speech_thread = threading.Thread(target=self.record_audio)
+        speech_thread.start()
         threading.Thread(target=self._countdown).start()
 
-        self.start_video_loop()
+        if operation < 2:
+            self.start_video_loop()
+        else:
+            self.start_speech_loop()
+
+        self.countdown_label.pack()
         self.window.mainloop()
+
+        speech_thread.join()
+
+    def start_speech_loop(self):
+        _, self.frame = self.capture.read()
+
+        self.callback(self.frame)
+        self.window.after(10, self.start_speech_loop)
+
+        if self.is_expired:
+            self._destroy_with_success()
 
     def start_video_loop(self):
         """
@@ -111,3 +143,15 @@ class Window:
         outer_image = cv2.bitwise_and(self.frame, outer_mask)
         ellipse_image = cv2.bitwise_and(self.frame, ellipse_mask)
         return cv2.addWeighted(ellipse_image, 1.0, outer_image, 0.5, 1)
+
+    def record_audio(self):
+        """
+        TODO
+        """
+        fs = SAMPLING_RATE
+
+        print("Start Recording")
+        my_recording = sd.rec(int(RECORD_SEC * fs), samplerate=fs, channels=1)
+        sd.wait()
+        write("record/record.wav", fs, my_recording)
+        print("End Recording")
