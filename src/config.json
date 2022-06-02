@@ -16,5 +16,8 @@
         "camera_shot": "./sounds/camera_shot.wav",
         "mic_stop": "./sounds/mic_stop.wav"
     },
+    "speech": {
+        "use_soundex_match": true
+    },
     "debug": true
 }

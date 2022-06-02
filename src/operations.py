@@ -1,13 +1,13 @@
 from deepface import DeepFace
+import azure.cognitiveservices.speech as speechsdk
+from jellyfish import soundex
 from gaze_tracking import GazeTracking
 from utils import (
     TASK_GAZE_CENTER,
     TASK_GAZE_LEFT,
     TASK_GAZE_RIGHT,
-    CLOSED_EYES,
     get_azure_api_key,
 )
-import azure.cognitiveservices.speech as speechsdk
 
 
 class Operations:
@@ -88,7 +88,7 @@ class Operations:
             <= self.config["blinking"]["max_threshold"]
         )
 
-    def verify_speech(self, words: str, tmpfile) -> bool:
+    def verify_speech(self, words: str, tmpfile, use_soundex_match=True) -> bool:
         def speech_to_text():
             """
             TODO
@@ -108,9 +108,26 @@ class Operations:
                 final_result = final_result.replace(char, "")
             return final_result.lower()
 
+        def to_soundex(sentence: str) -> list:
+            """Converts the given string to a list of Soundex codes"""
+            codes = []
+            for word in sentence.split(" "):
+                codes.append(soundex(word))
+            return codes
+
         stt = speech_to_text()
+
+        result = (
+            to_soundex(words[:-1]) == to_soundex(stt)
+            if use_soundex_match
+            else words[:-1] == stt
+        )
+
         if self.is_debug:
             print(f"Requested words: {words}; got: {stt}")
-            print(f"Result: {words[:-1] == stt}\n")
+            print(f"Using soundex: {use_soundex_match}")
+            if use_soundex_match:
+                print(f"Soundex codes: {to_soundex(words[:-1])}, {to_soundex(stt)}")
+            print(f"Result: {result}\n")
 
-        return words[:-1] == stt
+        return result

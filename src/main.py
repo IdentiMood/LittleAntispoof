@@ -111,7 +111,11 @@ class App:
         elif operation == OPERATION_VERIFY_GAZE:
             return self.operations.verify_gaze(frame, task)
         else:
-            return self.operations.verify_speech(WORDS, tmpfile)
+            return self.operations.verify_speech(
+                WORDS,
+                tmpfile,
+                self.config["speech"]["use_soundex_match"],
+            )
 
     def do_speech_verification(self):
         """
