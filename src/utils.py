@@ -32,7 +32,7 @@ TASK_GAZE_CENTER = "center"
 TASK_GAZE_LEFT = "left"
 CLOSED_EYES = "closed_eyes"
 
-SPEECH_RECOGNITION_HELP = "Frase per descrivere cosa l'utente deve fare"
+SPEECH_RECOGNITION_HELP = "Say these words out loud"
 
 EMOTION_TASKS = [
     TASK_EMOTION_HAPPY,
@@ -74,12 +74,12 @@ def get_speech_recognition_task() -> str:
     return SPEECH_RECOGNITION_HELP
 
 
-def get_random_words(dictionary) -> str:
+def get_random_words(dictionary_path: str) -> str:
     words_list = ""
-    lines = open(dictionary).read().splitlines()
+    lines = open(dictionary_path, encoding="utf8").read().splitlines()
     random_indexes = random.sample(range(0, len(lines)), NUMBER_OF_WORDS_TO_DISPLAY)
     for index in random_indexes:
-        words_list += lines[index][1:-1] + " "
+        words_list += f"{lines[index]} "
     return words_list
 
 

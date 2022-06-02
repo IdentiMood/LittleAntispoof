@@ -43,7 +43,7 @@ class Operations:
 
         if self.is_debug:
             print(
-                f"Requested emotion: {requested_emotion}; got {result['dominant_emotion']}"
+                f"Requested emotion: {requested_emotion}; got {result['dominant_emotion']}\n"
             )
 
         return result["dominant_emotion"] == requested_emotion
@@ -67,7 +67,7 @@ class Operations:
         self.gaze.refresh(probe)
 
         if self.is_debug:
-            print(f"Requested gaze: {requested_gaze}; got: {__get_gaze_direction()}")
+            print(f"Requested gaze: {requested_gaze}; got: {__get_gaze_direction()}\n")
 
         return requested_gaze == __get_gaze_direction()
 
@@ -111,9 +111,8 @@ class Operations:
             return final_result.lower()
 
         stt = speech_to_text()
-        print(f"Parole a schermo: {words}")
-        print(f"L'utente ha detto: {stt}")
-
-        print(f"Risultato: {words[:-1] == stt}")
+        if self.is_debug:
+            print(f"Requested words: {words}; got: {stt}")
+            print(f"Result: {words[:-1] == stt}\n")
 
         return words[:-1] == stt
