@@ -6,10 +6,11 @@ from playsound import playsound
 from PIL import Image, ImageTk
 from utils import (
     OPERATIONS_WINDOW_TITLES,
-    get_random_words,
     SAMPLING_RATE,
     RECORD_SEC,
     OPERATION_VERIFY_SPEECH,
+    get_random_words,
+    make_text_prompt,
 )
 import sounddevice as sd
 from scipy.io.wavfile import write
@@ -40,7 +41,7 @@ class Window:
 
         self.label = tk.Label(
             self.window,
-            text=task,
+            text=make_text_prompt(task),
             pady=20,
             font=("sans-serif", 24),
         )

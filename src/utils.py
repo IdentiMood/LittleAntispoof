@@ -91,3 +91,14 @@ def get_azure_api_key() -> str:
 
 def generate_temporary_path() -> str:
     return f"{tempfile._get_default_tempdir()}/{tempfile._get_candidate_names().__next__()}"
+
+
+def make_text_prompt(task: str) -> str:
+    """
+    Returns an embelished string describing the given task, based on its type
+    """
+    if task in GAZE_TASKS:
+        return f"Look {task}"
+    if task in EMOTION_TASKS:
+        return f"Make a {task} face"
+    return task
