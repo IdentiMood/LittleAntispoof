@@ -1,0 +1,98 @@
+@startuml LittleAntispoof
+
+package "LittleAntispoof" {
+    App -- Operations
+    App -- Window
+    
+    class App {
+        config: dict
+        operations: Operations
+        operations_list: list
+        blinks_checks_count: int
+        blinks_count: int
+        App(config)
+        _count_blinks(probe)
+        verify(): bool
+        handle_probe(operation, frame, task, tmpfile): bool
+        do_video_verification(operation): (bool, bool, bool)
+        do_speech_verification(): (bool, bool, bool)
+    }
+
+    class Operations {
+        config: dict
+        gaze: GazeTracking
+        is_debug: bool
+        Operations(config)
+        detect_face(probe): ndarray
+        verify_emotion(probe, requested_emotion): bool
+        verify_gaze(probe, requested_gaze): bool
+        verify_speech(words, tmpfile, use_soundex_match): bool
+        is_blinking(probe): bool
+        do_blinks_ratio_check(blinks_checks_count, blinks_count): bool
+    }
+
+    class Window {
+        window: tk.Tk
+        current_countdown: int
+        closing_sound: str
+        is_debug: bool
+        callback: callable
+        tmpfile: str
+        window: Tk
+        label: Label
+        canvas: Label
+        countdown_label: Label
+        is_expired: bool
+        capture: VideoCapture
+        frame: ndarray
+        words: Label
+
+        Window(operation, task, config, callback, tmpfile)
+        _countdown(): bool
+        _destroy_with_success()
+        _decorate_frame()
+        start_video_loop()
+        start_speech_loop()
+        record_audio()
+    }
+}
+
+package "DeepFace" {
+    class DeepFace {
+        detectFace(probe)
+        analyze()  
+    }
+}
+
+package "azure.cognitiveservices.speech" {
+    class SpeechConfig {
+        SpeechConfig(subscription, region, language)
+    }
+    class AudioConfig {
+        AudioConfig(filename)
+    }
+    class SpeechRecognizer {
+        SpeechRecognizer(speech_config, audio_config)
+        recognize_once_async()
+    }
+
+    SpeechRecognizer -- SpeechConfig
+    SpeechRecognizer -- AudioConfig
+}
+
+package "GazeTracking" {
+    class GazeTracking {
+        GazeTracking()
+        refresh(frame)
+        is_left(): bool
+        is_center(): bool
+        is_right(): bool
+        is_blinking(): bool
+    }
+}
+
+Operations -- DeepFace
+Operations -- azure.cognitiveservices.speech
+Operations -- GazeTracking
+
+@enduml
