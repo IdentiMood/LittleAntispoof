@@ -7,6 +7,7 @@ from utils import (
     TASK_GAZE_LEFT,
     TASK_GAZE_RIGHT,
     get_azure_api_key,
+    get_azure_region,
 )
 
 
@@ -24,9 +25,7 @@ class Operations:
         """
         Returns the cropped and aligned image, from the given probe.
         """
-        return DeepFace.detectFace(
-            probe, detector_backend=self.config["verify"]["detector_backend"]
-        )
+        return DeepFace.detectFace(probe, detector_backend=self.config["face_detector"])
 
     def verify_emotion(self, probe, requested_emotion: str) -> bool:
         """
@@ -36,7 +35,7 @@ class Operations:
         result = DeepFace.analyze(
             probe,
             actions=["emotion"],
-            detector_backend=self.config["emotion"]["detector_backend"],
+            detector_backend=self.config["face_detector"],
         )
 
         if self.is_debug:
@@ -94,7 +93,7 @@ class Operations:
             TODO
             """
             speech_config = speechsdk.SpeechConfig(
-                subscription=get_azure_api_key(), region="francecentral"
+                subscription=get_azure_api_key(), region=get_azure_region()
             )
             speech_config.speech_recognition_language = "en-US"
             audio_input = speechsdk.AudioConfig(filename=tmpfile)

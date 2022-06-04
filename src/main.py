@@ -4,13 +4,14 @@ import random
 import sys
 import os
 from operations import Operations
-from window import Window, WORDS
+from window import Window
 from utils import (
     load_config,
     get_random_emotion_task,
     get_random_gaze_task,
     get_speech_recognition_task,
     generate_temporary_path,
+    get_random_words,
     OPERATION_VERIFY_EMOTION,
     OPERATION_VERIFY_GAZE,
     OPERATION_VERIFY_SPEECH,
@@ -90,7 +91,9 @@ class App:
         if self.operations.is_blinking(probe):
             self.blinks_count += 1
 
-    def handle_probe(self, operation: int, frame, task: str, tmpfile=None) -> bool:
+    def handle_probe(
+        self, operation: int, frame, task: str, tmpfile=None, words=""
+    ) -> bool:
         """
         Calls the given recognition operation on the given frame.
         Returns True if the result of the operation was successful.
@@ -112,7 +115,7 @@ class App:
             return self.operations.verify_gaze(frame, task)
         else:
             return self.operations.verify_speech(
-                WORDS,
+                words,
                 tmpfile,
                 self.config["speech"]["use_soundex_match"],
             )
@@ -123,6 +126,9 @@ class App:
         Returns a tuple (speech verification passed, blink checks passed, operation complete).
         """
         task = get_speech_recognition_task()
+        words = get_random_words(
+            "./dictionary.txt", self.config["speech"]["words_to_display"]
+        )
 
         tmpfile = generate_temporary_path()
 
@@ -132,6 +138,7 @@ class App:
             self.config,
             callback=self._count_blinks,
             tmpfile=tmpfile,
+            words=words,
         )
         blinks_check_passed = (
             self.operations.do_blinks_ratio_check(
@@ -140,7 +147,9 @@ class App:
         )
 
         result = (
-            self.handle_probe(OPERATION_VERIFY_SPEECH, None, task, tmpfile=tmpfile),
+            self.handle_probe(
+                OPERATION_VERIFY_SPEECH, None, task, tmpfile=tmpfile, words=words
+            ),
             blinks_check_passed,
             (not window.is_expired),
         )

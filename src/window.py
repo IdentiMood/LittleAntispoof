@@ -7,15 +7,11 @@ from PIL import Image, ImageTk
 from utils import (
     OPERATIONS_WINDOW_TITLES,
     SAMPLING_RATE,
-    RECORD_SEC,
     OPERATION_VERIFY_SPEECH,
-    get_random_words,
     make_text_prompt,
 )
 import sounddevice as sd
 from scipy.io.wavfile import write
-
-WORDS = get_random_words("./dictionary.txt")
 
 
 class Window:
@@ -26,12 +22,18 @@ class Window:
     """
 
     def __init__(
-        self, operation: int, task: str, config: dict, callback: callable, tmpfile=None
+        self,
+        operation: int,
+        task: str,
+        config: dict,
+        callback: callable,
+        tmpfile=None,
+        words="",
     ):
-        global WORDS
-        self.current_countdown = config["window"]["duration_secs"]
+        self.current_countdown = config["window_duration_secs"]
         self.closing_sound = config["sounds"]["camera_shot"]
         self.is_debug = config["debug"]
+        self.records_secs = config["speech"]["record_duration_secs"]
 
         self.callback = callback
         self.tmpfile = tmpfile
@@ -62,13 +64,13 @@ class Window:
         self.capture = cv2.VideoCapture(0)
         self.frame = None
         if operation == OPERATION_VERIFY_SPEECH:
-            self.words = tk.Label(
+            self.words_label = tk.Label(
                 self.window,
-                text=WORDS,
+                text=words,
                 pady=20,
                 font=("sans-serif", 18),
             )
-            self.words.pack()
+            self.words_label.pack()
             speech_thread = threading.Thread(target=self.record_audio)
             speech_thread.start()
 
@@ -165,7 +167,7 @@ class Window:
 
         if self.is_debug:
             print(f"Start recording to temporary file {self.tmpfile}")
-        my_recording = sd.rec(int(RECORD_SEC * fs), samplerate=fs, channels=1)
+        my_recording = sd.rec(int(self.records_secs * fs), samplerate=fs, channels=1)
         sd.wait()
         write(self.tmpfile, fs, my_recording)
         if self.is_debug:

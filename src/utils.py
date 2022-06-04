@@ -47,11 +47,7 @@ GAZE_TASKS = [
     TASK_GAZE_LEFT,
 ]
 
-NUMBER_OF_WORDS_TO_DISPLAY = 3
-
 SAMPLING_RATE = 48000
-
-RECORD_SEC = 5
 
 
 def load_config():
@@ -75,10 +71,10 @@ def get_speech_recognition_task() -> str:
     return SPEECH_RECOGNITION_HELP
 
 
-def get_random_words(dictionary_path: str) -> str:
+def get_random_words(dictionary_path: str, number_of_words: int) -> str:
     words_list = ""
     lines = open(dictionary_path, encoding="utf8").read().splitlines()
-    random_indexes = random.sample(range(0, len(lines)), NUMBER_OF_WORDS_TO_DISPLAY)
+    random_indexes = random.sample(range(0, len(lines)), number_of_words)
     for index in random_indexes:
         words_list += f"{lines[index]} "
     return words_list
@@ -87,6 +83,11 @@ def get_random_words(dictionary_path: str) -> str:
 def get_azure_api_key() -> str:
     load_dotenv(".env")
     return os.environ.get("AZURE_API_KEY")
+
+
+def get_azure_region() -> str:
+    load_dotenv(".env")
+    return os.environ.get("AZURE_REGION")
 
 
 def generate_temporary_path() -> str:

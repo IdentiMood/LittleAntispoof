@@ -1,13 +1,6 @@
 {
-    "emotion": {
-        "detector_backend": "opencv"
-    },
-    "verify": {
-        "detector_backend": "opencv"
-    },
-    "window": {
-        "duration_secs": 5
-    },
+    "face_detector": "opencv",
+    "window_duration_secs": 5,
     "blinking": {
         "min_threshold": 0.2,
         "max_threshold": 0.5
@@ -17,7 +10,9 @@
         "mic_stop": "./sounds/mic_stop.wav"
     },
     "speech": {
-        "use_soundex_match": true
+        "words_to_display": 3,
+        "use_soundex_match": true,
+        "record_duration_secs": 5
     },
     "debug": true
 }
