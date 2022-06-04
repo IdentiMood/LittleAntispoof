@@ -1,0 +1,12 @@
+@startwbs
++ 0. <b>Get verified</b>\n(perform sequentially the\ntasks below, in random order)
+++ 1. <b>Emotion verification</b>\n(perform simultaneously\nthe tasks below)
++++ 1.1. <b>Distort face to reproduce</b>\n<b>the requested emotion</b>
+---_ 1.2. <b>Blink</b>\n<b>naturally</b>
+++ 2. <b>Gaze verification</b>\n(perform simultaneously\nthe tasks below)
++++ 2.1. <b>Look at the</b>\n<b>requested direction</b>
+---_ 2.2. <b>Blink</b>\n<b>naturally</b>
+++ 3. <b>Speech verification</b>\n(perform simultaneously\nthe tasks below)
++++ 3.1. <b>Pronounce the requested</b>\n<b>words out loud</b>
+---_ 3.2. <b>Blink</b>\n<b>naturally</b>
+@endwbs
