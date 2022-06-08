@@ -3,6 +3,7 @@
 import random
 import sys
 import os
+from playsound import playsound
 from operations import Operations
 from window import Window
 from utils import (
@@ -168,14 +169,10 @@ class App:
 if __name__ == "__main__":
     app = App(load_config())
 
-    print("Are you a real human?")
-    opt = input("[y]/n: ")
-
-    if opt in ("", "y"):
-        verified = app.verify()
-        if not verified:
-            print("It looks like you are not.", file=sys.stderr)
-            sys.exit(1)
-        print("Welcome, fellow human.")
-    else:
+    playsound(app.config["sounds"]["start"])
+    verified = app.verify()
+    if not verified:
+        print("You are not a human", file=sys.stderr)
         sys.exit(1)
+
+    print("Welcome, fellow human")

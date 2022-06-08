@@ -31,7 +31,12 @@ class Window:
         words="",
     ):
         self.current_countdown = config["window_duration_secs"]
-        self.closing_sound = config["sounds"]["camera_shot"]
+        self.closing_sound = (
+            config["sounds"]["mic_stop"]
+            if operation == OPERATION_VERIFY_SPEECH
+            else config["sounds"]["camera_shot"]
+        )
+
         self.is_debug = config["debug"]
         self.records_secs = config["speech"]["record_duration_secs"]
 
@@ -116,7 +121,6 @@ class Window:
         self.window.after(10, self.start_video_loop)
 
         if self.is_expired:
-            playsound(self.closing_sound)
             self._destroy_with_success()
 
     def _countdown(self) -> bool:
@@ -131,6 +135,7 @@ class Window:
         Closes the current Window with a "success" state,
         meaning that the user has clicked the "shot" button.
         """
+        playsound(self.closing_sound)
         self.is_expired = True
         self.window.destroy()
 

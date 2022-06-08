@@ -6,8 +6,9 @@
         "max_threshold": 0.6
     },
     "sounds": {
+        "start": "./sounds/start.mp3",
         "camera_shot": "./sounds/camera_shot.wav",
-        "mic_stop": "./sounds/mic_stop.wav"
+        "mic_stop": "./sounds/mic_stop.mp3"
     },
     "speech": {
         "words_to_display": 3,
