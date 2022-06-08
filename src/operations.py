@@ -75,15 +75,23 @@ class Operations:
         self.gaze.refresh(probe)
         return self.gaze.is_blinking()
 
-    def do_blinks_ratio_check(
-        self, blinks_checks_count: int, blinks_count: int
-    ) -> bool:
+    def do_blinks_ratio_check(self, blinks_count: int) -> bool:
         """
         Returns True if the ratio of blinks is within the configured thresholds range
         """
+
+        result = (
+            self.config["blinking"]["min_threshold"]
+            <= blinks_count / self.config["window_duration_secs"]
+            <= self.config["blinking"]["max_threshold"]
+        )
+
+        print(blinks_count / self.config["window_duration_secs"])
+        print(f"Result: {result}")
+
         return (
             self.config["blinking"]["min_threshold"]
-            <= blinks_count / blinks_checks_count
+            <= blinks_count / self.config["window_duration_secs"]
             <= self.config["blinking"]["max_threshold"]
         )
 

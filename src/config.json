@@ -3,7 +3,7 @@
     "window_duration_secs": 5,
     "blinking": {
         "min_threshold": 0.2,
-        "max_threshold": 0.5
+        "max_threshold": 0.6
     },
     "sounds": {
         "camera_shot": "./sounds/camera_shot.wav",

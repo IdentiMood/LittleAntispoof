@@ -30,7 +30,10 @@ class App:
         self.operations_list = OPERATIONS_LIST
         random.shuffle(self.operations_list)
 
-        self.blinks_checks_count = 0
+        self.blinks_count = 0
+        self.were_previous_frame_eyes_closed = False
+
+    def _reset_status(self):
         self.blinks_count = 0
 
     def verify(self) -> bool:
@@ -54,6 +57,8 @@ class App:
                     if self.config["debug"]:
                         print("Blink check passed")
 
+            self._reset_status()
+
             if aborted:
                 return False
 
@@ -74,11 +79,7 @@ class App:
         )
 
         window = Window(operation, task, self.config, callback=self._count_blinks)
-        blinks_check_passed = (
-            self.operations.do_blinks_ratio_check(
-                self.blinks_checks_count, self.blinks_count
-            ),
-        )
+        blinks_check_passed = self.operations.do_blinks_ratio_check(self.blinks_count)
 
         return (
             self.handle_probe(operation, window.frame, task),
@@ -87,9 +88,19 @@ class App:
         )
 
     def _count_blinks(self, probe):
-        self.blinks_checks_count += 1
-        if self.operations.is_blinking(probe):
+        eyes_closed = self.operations.is_blinking(probe)
+        if eyes_closed is None:
+            if self.config["debug"]:
+                print("Cannot localize eyes")
+            return
+
+        if eyes_closed and not self.were_previous_frame_eyes_closed:
+            if self.config["debug"]:
+                print("Blinking")
             self.blinks_count += 1
+            self.were_previous_frame_eyes_closed = True
+
+        self.were_previous_frame_eyes_closed = eyes_closed
 
     def handle_probe(
         self, operation: int, frame, task: str, tmpfile=None, words=""
@@ -140,11 +151,7 @@ class App:
             tmpfile=tmpfile,
             words=words,
         )
-        blinks_check_passed = (
-            self.operations.do_blinks_ratio_check(
-                self.blinks_checks_count, self.blinks_count
-            ),
-        )
+        blinks_check_passed = self.operations.do_blinks_ratio_check(self.blinks_count)
 
         result = (
             self.handle_probe(
