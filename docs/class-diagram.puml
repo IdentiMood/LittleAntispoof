@@ -64,6 +64,23 @@ package "DeepFace" {
     }
 }
 
+package "GazeTracking" {
+    class GazeTracking {
+        GazeTracking()
+        refresh(frame)
+        is_left(): bool
+        is_center(): bool
+        is_right(): bool
+        is_blinking(): bool
+    }
+}
+
+package "Jellyfish" {
+    class Jellyfish {
+        soundex()
+    }
+}
+
 package "azure.cognitiveservices.speech" {
     class SpeechConfig {
         SpeechConfig(subscription, region, language)
@@ -80,19 +97,9 @@ package "azure.cognitiveservices.speech" {
     SpeechRecognizer -- AudioConfig
 }
 
-package "GazeTracking" {
-    class GazeTracking {
-        GazeTracking()
-        refresh(frame)
-        is_left(): bool
-        is_center(): bool
-        is_right(): bool
-        is_blinking(): bool
-    }
-}
-
 Operations -- DeepFace
-Operations -- azure.cognitiveservices.speech
 Operations -- GazeTracking
+Operations -- Jellyfish
+Operations -- azure.cognitiveservices.speech
 
 @enduml
