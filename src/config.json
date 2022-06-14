@@ -1,9 +1,9 @@
 {
-    "face_detector": "opencv",
+    "face_detector": "dlib",
     "window_duration_secs": 5,
     "blinking": {
-        "min_threshold": 0.2,
-        "max_threshold": 0.6
+        "min_threshold": 0.6,
+        "max_threshold": 1.5
     },
     "sounds": {
         "start": "./sounds/start.mp3",

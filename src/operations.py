@@ -80,20 +80,18 @@ class Operations:
         Returns True if the ratio of blinks is within the configured thresholds range
         """
 
+        ratio = blinks_count / self.config["window_duration_secs"]
+
         result = (
             self.config["blinking"]["min_threshold"]
-            <= blinks_count / self.config["window_duration_secs"]
+            <= ratio
             <= self.config["blinking"]["max_threshold"]
         )
 
-        print(blinks_count / self.config["window_duration_secs"])
-        print(f"Result: {result}")
+        if self.is_debug:
+            print(f"Blink ratio: {ratio} ==> result: {result}")
 
-        return (
-            self.config["blinking"]["min_threshold"]
-            <= blinks_count / self.config["window_duration_secs"]
-            <= self.config["blinking"]["max_threshold"]
-        )
+        return result
 
     def verify_speech(self, words: str, tmpfile, use_soundex_match=True) -> bool:
         def speech_to_text():
@@ -131,7 +129,7 @@ class Operations:
         )
 
         if self.is_debug:
-            print(f"Requested words: {words}; got: {stt}")
+            print(f"Requested words: {words[:-1]}; got: {stt}")
             print(f"Using soundex: {use_soundex_match}")
             if use_soundex_match:
                 print(f"Soundex codes: {to_soundex(words[:-1])}, {to_soundex(stt)}")

@@ -8,3 +8,5 @@ keyboard
 computer
 multimodal
 biometric
+fire
+fox
