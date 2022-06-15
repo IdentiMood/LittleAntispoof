@@ -59,7 +59,7 @@ class Operations:
                 return TASK_GAZE_RIGHT
 
         if self.is_debug:
-            print("Performing emotion recognition")
+            print("Performing gaze recognition")
 
         self.gaze.refresh(probe)
 
@@ -70,7 +70,8 @@ class Operations:
 
     def is_blinking(self, probe) -> bool:
         """
-        Returns True if the eyes in the given probe are closed
+        Wraps a call to the blinking check of GazeTracking, which
+        returns True if the eyes in the given probe are closed
         """
         self.gaze.refresh(probe)
         return self.gaze.is_blinking()
@@ -94,10 +95,11 @@ class Operations:
         return result
 
     def verify_speech(self, words: str, tmpfile, use_soundex_match=True) -> bool:
+        """
+        Returns True if the user's utterance matches with the requested {words}.
+        """
+
         def speech_to_text():
-            """
-            TODO
-            """
             speech_config = speechsdk.SpeechConfig(
                 subscription=get_azure_api_key(), region=get_azure_region()
             )

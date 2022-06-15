@@ -4,14 +4,14 @@ import threading
 import cv2
 from playsound import playsound
 from PIL import Image, ImageTk
+import sounddevice as sd
+from scipy.io.wavfile import write
 from utils import (
     OPERATIONS_WINDOW_TITLES,
     SAMPLING_RATE,
     OPERATION_VERIFY_SPEECH,
     make_text_prompt,
 )
-import sounddevice as sd
-from scipy.io.wavfile import write
 
 
 class Window:
@@ -43,6 +43,8 @@ class Window:
         self.callback = callback
         self.tmpfile = tmpfile
 
+        self.is_expired = False
+
         self.window = tk.Tk()
         self.window.title(OPERATIONS_WINDOW_TITLES[operation])
 
@@ -62,9 +64,6 @@ class Window:
 
         self.label.pack()
         self.canvas.pack()
-        # self.countdown_label.pack()
-
-        self.is_expired = False
 
         self.capture = cv2.VideoCapture(0)
         self.frame = None
@@ -94,6 +93,9 @@ class Window:
             speech_thread.join()
 
     def start_speech_loop(self):
+        """
+        Starts the video capture specialized for the speech acquisition window.
+        """
         _, self.frame = self.capture.read()
 
         self.callback(self.frame)
@@ -132,8 +134,7 @@ class Window:
 
     def _destroy_with_success(self):
         """
-        Closes the current Window with a "success" state,
-        meaning that the user has clicked the "shot" button.
+        Closes the current Window with a "success" state
         """
         playsound(self.closing_sound)
         self.is_expired = True
@@ -166,14 +167,15 @@ class Window:
 
     def record_audio(self):
         """
-        TODO
+        Records the user's speech into {self.tmpfile}
         """
-        fs = SAMPLING_RATE
-
         if self.is_debug:
             print(f"Start recording to temporary file {self.tmpfile}")
-        my_recording = sd.rec(int(self.records_secs * fs), samplerate=fs, channels=1)
+
+        my_recording = sd.rec(
+            int(self.records_secs * SAMPLING_RATE), samplerate=SAMPLING_RATE, channels=1
+        )
         sd.wait()
-        write(self.tmpfile, fs, my_recording)
+        write(self.tmpfile, SAMPLING_RATE, my_recording)
         if self.is_debug:
             print("End recording")

@@ -39,7 +39,7 @@ class App:
 
     def verify(self) -> bool:
         """
-        Starts the antispoofing detection procedure.
+        Starts the liveness detection procedure.
         """
         passed_steps = 0
         for operation in self.operations_list:
@@ -70,7 +70,7 @@ class App:
 
     def do_video_verification(self, operation: int) -> tuple:
         """
-        Shows a Window to shot the picture.
+        Shows a Window to acquire the picture.
         Returns a triple (success, blink_check_passed, operation_has_been_aborted).
         """
         task = (
@@ -83,7 +83,7 @@ class App:
         blinks_check_passed = self.operations.do_blinks_ratio_check(self.blinks_count)
 
         return (
-            self.handle_probe(operation, window.frame, task),
+            self.handle_task(operation, window.frame, task),
             blinks_check_passed,
             (not window.is_expired),
         )
@@ -99,19 +99,19 @@ class App:
             if self.config["debug"]:
                 print("Blinking")
             self.blinks_count += 1
-            self.were_previous_frame_eyes_closed = True
 
         self.were_previous_frame_eyes_closed = eyes_closed
 
-    def handle_probe(
+    def handle_task(
         self, operation: int, frame, task: str, tmpfile=None, words=""
     ) -> bool:
         """
-        Calls the given recognition operation on the given frame.
+        Calls the given recognition operation.
+        Depending on the operation type, the appropriate parameters are used.
         Returns True if the result of the operation was successful.
         """
         try:
-            if operation < 2:
+            if operation in (OPERATION_VERIFY_EMOTION, OPERATION_VERIFY_GAZE):
                 self.operations.detect_face(frame)
         except ValueError as error:
             print(
@@ -123,14 +123,14 @@ class App:
 
         if operation == OPERATION_VERIFY_EMOTION:
             return self.operations.verify_emotion(frame, task)
-        elif operation == OPERATION_VERIFY_GAZE:
+        if operation == OPERATION_VERIFY_GAZE:
             return self.operations.verify_gaze(frame, task)
-        else:
-            return self.operations.verify_speech(
-                words,
-                tmpfile,
-                self.config["speech"]["use_soundex_match"],
-            )
+
+        return self.operations.verify_speech(
+            words,
+            tmpfile,
+            self.config["speech"]["use_soundex_match"],
+        )
 
     def do_speech_verification(self):
         """
@@ -155,7 +155,7 @@ class App:
         blinks_check_passed = self.operations.do_blinks_ratio_check(self.blinks_count)
 
         result = (
-            self.handle_probe(
+            self.handle_task(
                 OPERATION_VERIFY_SPEECH, None, task, tmpfile=tmpfile, words=words
             ),
             blinks_check_passed,
