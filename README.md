@@ -2,6 +2,12 @@
 
 This project has been developed for the Multimodal Interaction course at Sapienza University of Rome (2021-22).
 
+[Project report](<docs/LittleAntispoof - Multimodal Interaction Report.pdf>) | [Project presentation](<docs/LittleAntispoof - Multimodal Interaction Presentation.pdf>)
+
+By [Davide Quaranta](https://github.com/fortym2) and [Federico Cernera](https://github.com/fedecerno).
+
+---
+
 LittleAntispoof is a multimodal **face liveness detection** module that can be used in the context of face anti-spoofing.
 
 The system uses a **challenge-response** interaction style, composed of gaze verification, emotion verification, speech verification, and eye blinking check.
